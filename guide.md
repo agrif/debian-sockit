@@ -217,7 +217,7 @@ configuration for the SoCKit:
     $ armmake socfpga_defconfig
 
 This is a good start, but there are a few kernel options we need to
-enable to get *systemd* and *ext4* working:
+enable to get Debian Jessie running:
 
     $ armmake menuconfig
 
@@ -232,6 +232,8 @@ kernel stuff you want.
         [*] Block layer SG support v4
     File systems  --->
         [*] Inotify support for userspace
+        [*]     Ext3 Security Labels
+        [*]   Ext4 Security Labels
 
 Exit the menu, and be sure to save! Now we are going to use
 [*make-kpkg*][kpkg] to build a Debian kernel package from these
@@ -308,7 +310,7 @@ handful of niceties to finish up.
 Running things as *root* all the time is (generally speaking) a bad
 idea. To create a new user for everyday work:
 
-    $ sudo chroot mnt/ adduser <username>
+    $ sudo chroot mnt/ adduser --add_extra_groups <username>
 
 To give this user access to *sudo* so they can become root:
 
@@ -322,13 +324,14 @@ Since we have this user, we'll lock root logins:
 
 There are a couple of Debian packages you would probably like to have:
 
- * *openssh-server*: for remote shell access
- * *ntp*: to set the correct time on boot via the Internet
  * *locales*: mostly to get rid of errors, but also to handle locales
+ * *ntp*: to set the correct time on boot via the Internet
+ * *openssh-server*: for remote shell access
+ * *sudo*: to get root access
 
 To install these:
 
-    $ sudo chroot mnt/ apt-get install openssh-server ntp locales
+    $ sudo chroot mnt/ apt-get install locales ntp openssh-server sudo
 
 By default, the SSH server allows logging in remotely as root. This is
 a pretty bad idea, so edit *mnt/etc/ssh/sshd_config* and change the
@@ -363,7 +366,12 @@ boot (which is usually what you want), edit the file
 
 By default, the new Debian install will have the same hostname as the
 host you built it on. This can be confusing. Edit *mnt/etc/hostname*
-to change it.
+to change it, then edit *mnt/etc/hosts* to add the new hostname:
+
+    127.0.0.1       localhost <hostname>
+    ::1             localhost ip6-localhost ip6-loopback <hostname>
+    ff02::1         ip6-allnodes
+    ff02::2         ip6-allrouters
 
 ### Fix APT Sources
 
