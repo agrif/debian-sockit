@@ -43,8 +43,7 @@ SECMIRROR="http://security.debian.org/"
 USERNAME="sockit"
 PASSWORD="arrow"
 HOSTNAME="sockit"
-TZAREA="US"
-TZZONE="Eastern"
+TIMEZONE="US/Eastern"
 LOCALE="en_US.UTF-8"
 
 # parse command line
@@ -301,20 +300,19 @@ fi
 
 if step 33 "Installing Debian - Installing Tools"; then
     run_quiet mount `partition "$dev" 2` "$MOUNTPOINT"
-    yes | run_quiet chroot "$MOUNTPOINT" apt-get install locales ntp openssh-server sudo
-    killall -qw "$MOUNTPOINT/usr/bin/qemu-arm-static"
-    
-    run_quiet sed -i 's/PermitRootLogin without-password/PermitRootLogin no/' "$MOUNTPOINT/etc/ssh/sshd_config"
-
     run_quiet chroot "$MOUNTPOINT" debconf-set-selections << EOF
-tzdata tzdata/Areas select $TZAREA
-tzdata tzdata/Zones/$TZAREA select $TZZONE
 locales locales/locales_to_be_generated multiselect     $LOCALE UTF-8
 locales locales/default_environment_locale      select  $LOCALE
 EOF
+
+    yes | run_quiet chroot "$MOUNTPOINT" apt-get install locales ntp openssh-server sudo
+    killall -qw "$MOUNTPOINT/usr/bin/qemu-arm-static"
+
+    run_quiet sed -i 's/PermitRootLogin without-password/PermitRootLogin no/' "$MOUNTPOINT/etc/ssh/sshd_config"
+
+    echo "$TIMEZONE" | run_quiet tee "$MOUNTPOINT/etc/timezone"
     run_quiet chroot "$MOUNTPOINT" dpkg-reconfigure -f noninteractive tzdata
-    run_quiet chroot "$MOUNTPOINT" dpkg-reconfigure -f noninteractive locales
-    
+
     run_quiet umount "$MOUNTPOINT"
 fi
 
