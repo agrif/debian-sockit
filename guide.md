@@ -67,6 +67,21 @@ package list and install the toolchain:
     $ sudo apt-get update
     $ sudo apt-get install crossbuild-essential-armhf
 
+Using the Install Script
+------------------------
+
+If you would like to run through this guide automatically, with no
+choices (and no real chance of recovery during failure), you can use
+the *install.sh* script included with this guide. You will need to
+have installed the tools above. The script creates a fair amount of
+detritus, so you should run it in a temporary scratch directory:
+
+    $ mkdir -p scratch
+    $ cd scratch
+    $ sudo ../install.sh /dev/sdcard
+
+Otherwise, read on.
+
 Preparing the SD Card
 ---------------------
 
