@@ -35,6 +35,7 @@ To complete the build, you'll need some tools installed:
 
  * *curl*: to fetch a codesigning key
  * *debootstrap*: to install the Debian root
+ * *dosfstools*: to make a FAT filesystem
  * *git*: to clone a copy of the Linux kernel sources
  * *kernel-package*: to build Debian kernel packages
  * *ncurses-dev*: to build the kernel's configuration menu
@@ -42,8 +43,8 @@ To complete the build, you'll need some tools installed:
 
 On Debian, you can install all these with:
 
-    $ sudo apt-get install curl debootstrap git kernel-package \
-        ncurses-dev qemu-user-static
+    $ sudo apt-get install curl debootstrap dosfstools git \
+        kernel-package ncurses-dev qemu-user-static
 
 Additionally, you'll need a
 [cross-compilation toolchain for ARM][cross]. To install those, create
@@ -159,6 +160,7 @@ and inspect it, then write it out to disk.
     
     Command: p                               # print it out, make sure it looks about right
     Command: w                               # write changes to disk (cannot be undone)
+    Command: q                               # quit fdisk
 
 Once *fdisk* exits, you should have three shiny new partitions to format.
 
@@ -231,9 +233,10 @@ kernel stuff you want.
         [*] Support for large (2TB+) block devices and files
         [*] Block layer SG support v4
     File systems  --->
-        [*] Inotify support for userspace
+        [*]     Ext2 Security Labels
         [*]     Ext3 Security Labels
         [*]   Ext4 Security Labels
+        [*] Inotify support for userspace
 
 Exit the menu, and be sure to save! Now we are going to use
 [*make-kpkg*][kpkg] to build a Debian kernel package from these
@@ -333,6 +336,11 @@ To install these:
 
     $ sudo chroot mnt/ apt-get install locales ntp openssh-server sudo
 
+These commands have started a few services accidentally. You can kill
+them with:
+
+    $ sudo killall mnt/usr/bin/qemu-arm-static
+
 By default, the SSH server allows logging in remotely as root. This is
 a pretty bad idea, so edit *mnt/etc/ssh/sshd_config* and change the
 following line:
@@ -349,11 +357,6 @@ something more appropriate:
 Finally, reconfigure locales to use the *en_US.UTF-8* locale:
 
     $ sudo chroot mnt/ dpkg-reconfigure locales
-
-These commands have started a few services accidentally. You can kill
-them with:
-
-    $ sudo killall mnt/usr/bin/qemu-arm-static
 
 ### Setting up Networking
 
