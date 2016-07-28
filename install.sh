@@ -274,9 +274,9 @@ if step 31 "Installing Debian - Base"; then
     run_quiet cp linux-headers-`kerneldeb`_1_armhf.deb "$MOUNTPOINT/root/"
     run_quiet cp linux-image-`kerneldeb`_1_armhf.deb "$MOUNTPOINT/root/"
     run_quiet cp linux-image-`kerneldeb`-dbg_1_armhf.deb "$MOUNTPOINT/root/"
-    
-    run_quiet chroot "$MOUNTPOINT" dpkg -i /root/linux-image-`kerneldeb`_1_armhf.deb
+
     run_quiet chroot "$MOUNTPOINT" dpkg -i /root/linux-headers-`kerneldeb`_1_armhf.deb
+    run_quiet chroot "$MOUNTPOINT" dpkg -i /root/linux-image-`kerneldeb`_1_armhf.deb
     
     run_quiet umount "$MOUNTPOINT"
 fi

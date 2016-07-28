@@ -315,8 +315,8 @@ we need right now are the kernel modules and headers, but we copy the
 others into */root* in case we need them later.
 
     $ sudo cp *.deb mnt/root/
-    $ sudo chroot mnt/ dpkg -i /root/linux-image-3.9.0-ged01b8c_1_armhf.deb
     $ sudo chroot mnt/ dpkg -i /root/linux-headers-3.9.0-ged01b8c_1_armhf.deb
+    $ sudo chroot mnt/ dpkg -i /root/linux-image-3.9.0-ged01b8c_1_armhf.deb
 
 (Exact file names may differ depending on kernel version.)
 
