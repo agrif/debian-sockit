@@ -1,11 +1,11 @@
+\appendix
+
 Debian on Arrow SoCKit
 ======================
 
 This guide will walk you through the process of creating a MicroSD
 card suitable for booting a SoCKit board into Debian, from scratch
 (insofar as that is possible).
-
-[TOC]
 
 If you just want to get started, it is probably easier to get a
 pre-made Debian image from someone. This guide just notes how that

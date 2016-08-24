@@ -1,9 +1,15 @@
 .PHONY : all clean
 
-all : guide.html
+PANDOC=pandoc
+PANDOC_ARGS=-s --toc
+
+PAGES=00-frontmatter.md 99-A-debian.md
+TARGETS=guide.html guide.pdf
+
+all : ${TARGETS}
 
 clean :
-	rm -f guide.html
+	rm -f ${TARGETS}
 
-%.html : %.md template_head.html template_tail.html
-	markdown_py $< -o html5 -x smarty -x toc | cat template_head.html - template_tail.html > $@
+guide.% : ${PAGES} templates/%.template
+	${PANDOC} -f markdown -o $@ ${PAGES} --template templates/$*.template ${PANDOC_ARGS}
