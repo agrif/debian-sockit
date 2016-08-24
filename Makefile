@@ -3,7 +3,7 @@
 PANDOC=pandoc
 PANDOC_ARGS=-s --toc
 
-PAGES=00-frontmatter.md 99-A-debian.md
+PAGES=pages/00-frontmatter.md pages/99-A-debian.md
 TARGETS=guide.html guide.pdf
 
 all : ${TARGETS}

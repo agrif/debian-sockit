@@ -72,13 +72,13 @@ Using the Install Script
 
 If you would like to run through this guide automatically, with no
 choices (and no real chance of recovery during failure), you can use
-the *install.sh* script included with this guide. You will need to
+the *extras/install.sh* script included with this guide. You will need to
 have installed the tools above. The script creates a fair amount of
 detritus, so you should run it in a temporary scratch directory:
 
     $ mkdir -p scratch
     $ cd scratch
-    $ sudo ../install.sh /dev/sdcard
+    $ sudo ../extras/install.sh /dev/sdcard
 
 Otherwise, read on.
 
@@ -193,12 +193,12 @@ Our bootloader partition (#3) isn't a filesystem, it's a binary blob
 containing [U-Boot][uboot], and a bit of code to interface it with the
 SoCKit board. At the moment, I have [no idea][] how this blob is
 created, but it should have been included alongside this guide as
-*uboot.img*. We will write that to the disk now:
+*extras/uboot.img*. We will write that to the disk now:
 
  [uboot]: http://www.denx.de/wiki/U-Boot
  [no idea]: https://rocketboards.org/foswiki/view/Documentation/GSRD151SDCardArrowSoCKitEdition
 
-    $ sudo dd if=uboot.img of=/dev/sdcard3 bs=4k
+    $ sudo dd if=extras/uboot.img of=/dev/sdcard3 bs=4k
 
 Now that we have the SD card set up, we can start putting data on it.
 
