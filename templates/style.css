@@ -1,0 +1,12 @@
+body {
+    width: 700px;
+    margin: 0 auto;
+}
+
+pre, code {
+    background: #eee;
+}
+
+pre {
+    padding: 1em;
+}
