@@ -1,0 +1,9 @@
+# compile this into a uboot image with:
+# mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n "My script" -d u-boot.txt u-boot.scr
+# then put it in BOOT INFO alongside socfpga.dtb and zImage
+# it will load soc_system.rbf onto the fpga at boot time!
+fatload mmc 0:1 $fpgadata soc_system.rbf;
+fpga load 0 $fpgadata $filesize;
+run bridge_enable_handoff;
+run mmcload;
+run mmcboot;
