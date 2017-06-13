@@ -1,15 +1,19 @@
+SOURCES=readme.tex sdcard.tex
+
+LATEX=xelatex -shell-escape
+
 .PHONY : all clean
 
-PANDOC=pandoc
-PANDOC_ARGS=-s -S --self-contained --toc -c templates/style.css
-
-PAGES=pages/00-frontmatter.md pages/99-A-debian.md
-TARGETS=guide.html guide.pdf guide.md guide.rtf
-
-all : ${TARGETS}
+all : ${SOURCES:.tex=.pdf}
 
 clean :
-	rm -f ${TARGETS}
+	rm -f ${SOURCES:.tex=.pdf}
+	rm -rf $(addprefix _minted-,${SOURCES:.tex=})
+	rm -f ${SOURCES:.tex=.aux}
+	rm -f ${SOURCES:.tex=.log}
+	rm -f ${SOURCES:.tex=.out}
+	rm -f ${SOURCES:.tex=Notes.bib}
 
-guide.% : ${PAGES}
-	${PANDOC} -f markdown -o $@ ${PAGES} ${PANDOC_ARGS}
+%.pdf : %.tex sockitguide.cls
+	${LATEX} $*
+	${LATEX} $*

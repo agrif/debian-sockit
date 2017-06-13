@@ -1,0 +1,485 @@
+\documentclass{sockitguide}
+
+\begin{document}
+
+\sockittitle{Creating a Debian SD Card for Arrow SoCKit}
+
+This guide will walk you through the process of creating a MicroSD card
+suitable for booting a SoCKit board into Debian, from scratch (insofar
+as that is possible).
+
+If you just want to get started, it is probably easier to get a pre-made
+Debian image from someone. This guide just notes how that image is
+created, if none already exist.
+
+This guide is loosely based off \fnurl{\textit{Exploring the Arrow
+    SoCKit Part
+    II}}{https://zhehaomao.com/blog/fpga/2013/12/24/sockit-2.html}, by
+Howard Mao. The rest of his tutorial is amazing, and worth a look.
+
+\section{Preparing a Workspace}
+
+This guide is written for use on an existing Debian Jessie installation,
+with access to a MicroSD card reader. It might work in other situations
+with some changes. I recommend using a virtual machine.
+
+It would be a good idea to run this whole guide inside a new, empty
+directory, just for a clean work space.
+
+You will need about \SI{1.8}{\gibi\byte} of free space to work in. In
+addition, your SD card needs to be \SI{1}{\gibi\byte} or more. If you
+are working on Debian, the tools you need to follow this guide will
+take up about \SI{3}{\gibi\byte} more.
+
+To complete the build, you'll need some tools installed:
+\begin{itemize}
+\item \texttt{curl}, to fetch a codesigning key
+\item \texttt{debootstrap}, to install the Debian root
+\item \texttt{dosfstools}, to make a FAT filesystem
+\item \texttt{git}, to clone a copy of the Linux kernel sources
+\item \texttt{kernel-package}, to build Debian kernel packages
+\item \texttt{ncurses-dev}, to build the kernel's configuration menu
+\item \texttt{qemu-user-static}, for \texttt{qemu-debootstrap}, to install the Debian root
+\end{itemize}
+
+On Debian, you can install all these with:
+\begin{minted}{console}
+$ sudo apt-get install curl debootstrap \
+    dosfstools git kernel-package ncurses-dev \
+    qemu-user-static
+\end{minted}
+
+Additionally, you'll need a \fnurl{cross-compilation toolchain for
+  ARM}{http://emdebian.org/tools/debian/}. To install one, create the
+file \texttt{/etc/apt/sources.list.d/crosstools.list} and add the
+following:
+\begin{minted}[breaklines]{sources.list}
+deb http://emdebian.org/tools/debian/ jessie main
+\end{minted}
+
+You will also need to install the codesigning key they use:
+\begin{minted}{console}
+$ curl http://emdebian.org/tools/debian/\
+  emdebian-toolchain-archive.key \
+  | sudo apt-key add -
+\end{minted}
+
+Now, you can add \texttt{armhf} to your architecture list, update your package list, and install the toolchain:
+\begin{minted}{console}
+$ sudo dpkg --add-architecture armhf
+$ sudo apt-get update
+$ sudo apt-get install crossbuild-essential-armhf
+\end{minted}
+
+\section{Preparing the SD Card}
+
+First, you will need to identify which device in \texttt{/dev}
+represents your SD card. One way to do this is to insert a new SD
+card, wait for your desktop environment to automatically mount it,
+then run the \texttt{mount} command to see what's new.
+
+Be sure you get this right! If you accidentally try to run the following
+commands on the wrong device, you could destroy data on your hard
+drives.
+
+If you don't have an SD card handy, or don't want to try this, you can
+also create a disk image and set it up as a loopback device:
+\begin{minted}{console}
+$ dd if=/dev/zero of=my_debian_image.img \
+  bs=1M count=1024
+$ sudo losetup --show -fP my_debian_image.img
+\end{minted}
+
+The last command will print a line (probably \texttt{/dev/loop0});
+this is your device.
+
+From now on, I will use \texttt{/dev/sdcard} as my device
+name. Subtitute your actual device name as needed.
+
+\subsection{Partitioning}
+
+The SoCKit needs at least three partitions on the SD card to boot. These
+are:
+\begin{itemize}
+\item a bootloader, \SI{1}{\mebi\byte}, starting at sector 2048, with ID 0xA2
+\item a boot information partition, FAT formatted, as partition \#1
+\item a root partition, as partition \#2
+\end{itemize}
+
+Since partitions \#1 and \#2 are taken by boot and root, we will stick
+the bootloader partition in slot \#3. We'll also stick the root
+partition at the end of the card, to make it easier to resize later
+(if we were making a disk image).
+
+Let's launch \texttt{fdisk} and make these partitions. First off, we
+need to clear the existing table (if any):
+\begin{minted}{console}
+$ sudo fdisk /dev/sdcard
+Welcome to fdisk (util-linux 2.25.2).
+...
+
+Command: o
+\end{minted}
+
+Now, we need to make the bootloader partition(\#3):
+\begin{minted}[breaklines]{console}
+Command: n
+Select: p
+Partition number: 3
+First sector: 2048
+Last sector, +sectors or +size: +2048
+
+Created a new partition 3 of type 'Linux' and of size 1 MiB.
+
+Command: t
+Hex code: a2
+Changed type of partition 'Linux' to 'unknown'.
+\end{minted}
+
+Next up is the boot information partition (\#1):
+\begin{minted}[breaklines]{console}
+Command: n
+Select: p
+Partition number: 1
+First sector: <enter>
+Last sector, +sectors or +size: +128M
+
+Created a new partition 1 of type 'Linux' and of size 128MiB.
+
+Command: t
+Partition number: 1
+Hex code: 0b
+Changed type of partition 'Linux' to 'W95 FAT32'.
+\end{minted}
+
+And finally the root partition (\#2):
+\begin{minted}[breaklines]{console}
+Command: n
+Select: p
+Partition number: 2
+First sector: <enter>
+Last sector, +sectors or +size: <enter>
+
+Created a new partition 2 of type 'Linux' and of size <...>.
+\end{minted}
+
+In principle, you can do anything you want with the fourth (unused)
+partition, and it won't affect the boot. We choose to ignore it, and use
+all remaining free space for the root partition (\#2).
+
+Before we're done, you should print out the table you've constructed and
+inspect it, then write it out to disk.
+\begin{minted}[breaklines]{console}
+Command: p
+<inspect table, then...>  
+Command: w
+Command: q
+\end{minted}
+
+Once \texttt{fdisk} exits, you should have three shiny new partitions
+to format.
+
+\subsection{Formatting}
+
+Our boot information partition (\#1) needs a FAT filesystem:
+\begin{minted}{console}
+$ sudo mkfs.vfat -n "SOCKIT BOOT" /dev/sdcard1
+\end{minted}
+
+For our root partition (\#2), we will use Ext4:
+\begin{minted}{console}
+$ sudo mkfs.ext4 -L "Debian Jessie" \
+  /dev/sdcard2
+\end{minted}
+
+Our bootloader partition (\#3) isn't a filesystem, it's a binary blob
+containing \fnurl{U-Boot}{http://www.denx.de/wiki/U-Boot}, and a bit
+of code to interface it with the SoCKit board. At the moment, I have
+\fnurl{no
+  idea}{https://rocketboards.org/foswiki/view/Documentation/GSRD151SDCardArrowSoCKitEdition}
+how this blob is created, but it should have been included alongside
+this guide as \texttt{extras/uboot.img}. We will write that to the
+disk now:
+\begin{minted}{console}
+$ sudo dd if=extras/uboot.img of=/dev/sdcard3 \
+  bs=4k
+\end{minted}
+
+Now that we have the SD card set up, we can start putting data on it.
+
+\section{Building a Kernel}
+
+Our boot information filesystem needs to contain at least two files:
+\begin{itemize}
+\item \texttt{zImage}, a compressed Linux kernel
+\item \texttt{socfpga.dtb}, a \fnurl{device tree}{http://elinux.org/Device_Tree} describing board layout
+\end{itemize}
+
+Both of these can be created from the Linux kernel source tree, which
+we will clone from Altera via \texttt{git}. We'll use a shallow clone
+and only check out the specific tag we need, as the full Linux git
+repository is gigantic.
+
+\begin{minted}{console}
+$ git clone --depth=1 -b socfpga-4.10 \
+  https://github.com/altera-opensource/\
+  linux-socfpga.git
+\end{minted}
+
+This tag is known to work, but may be old. It might be worth trying newer
+tags.
+
+Before we continue, we'll set up a quick \texttt{bash} alias to make
+cross-building for ARM easier:
+\begin{minted}{console}
+$ alias armmake="make \
+  CROSS_COMPILE=arm-linux-gnueabihf- ARCH=arm"
+\end{minted}
+
+Ok. Move into the shiny new kernel sources, and set up the default
+configuration for the SoCKit:
+\begin{minted}{console}
+$ cd linux-socfpga
+$ armmake socfpga_defconfig
+\end{minted}
+
+This is a good start, but there are a few kernel options we need to
+enable to get Debian Jessie running:
+\begin{minted}{console}
+$ armmake menuconfig
+\end{minted}
+
+You should now have a configuration menu. Navigate to, and enable, the
+following options. Now would be a great time to enable any other kernel
+stuff you want.
+
+\begin{minted}[breaklines]{text}
+General setup  --->
+    [*] open by fhandle syscalls
+Enable the block layer  --->
+    [*] Support for large (2TB+) block devices and files
+    [*] Block layer SG support v4
+File systems  --->
+    [*]     Ext2 Security Labels
+    [*]     Ext3 Security Labels
+    [*]   Ext4 Security Labels
+    [*] Inotify support for userspace
+\end{minted}
+
+Exit the menu, and be sure to save! Now we are going to use
+\fnurl{\texttt{make-kpkg}}{http://man.he.net/man1/make-kpkg} to build
+a Debian kernel package from these sources, and along the way, our
+\texttt{zImage}. This can take a \textit{long time}, so we will build
+in parallel: change the 2 in \texttt{-j2} to the number of
+CPUs on your build machine.
+
+\begin{minted}{console}
+$ fakeroot make-kpkg --arch armhf \
+  --cross-compile arm-linux-gnueabihf- \
+  -j2 --revision 1 binary-indep binary-arch
+\end{minted}
+
+This stuck a bunch of Debian packages in the directory above your kernel
+source. We'll use those later. Now we just need the device trees:
+\begin{minted}{console}
+$ armmake dtbs
+\end{minted}
+
+Move back outside the kernel source, and mount our boot information
+partition (\#1) somewhere temporary:
+\begin{minted}{console}
+$ cd ..
+$ mkdir mnt
+$ sudo mount /dev/sdcard1 mnt/
+\end{minted}
+
+Now we copy the two files we need into place:
+\begin{minted}{console}
+$ sudo cp linux-socfpga/arch/arm/boot/zImage \
+  mnt/zImage
+$ sudo cp linux-socfpga/arch/arm/boot/dts/\
+  socfpga_cyclone5_sockit.dtb mnt/socfpga.dtb
+\end{minted}
+
+There are a few other things you can add to this partition, in
+particular a
+\fnurl{\texttt{u-boot.scr}}{https://lists.rocketboards.org/pipermail/rfi/2014-April/001602.html}
+file, which U-Boot reads and executes at boot. This can be used to
+customize the boot process, but it's not required, so we skip it
+here. An example is provided alongside this guide in \texttt{extras/}.
+
+Also, since you may be modifying both \texttt{zImage} and
+\texttt{socfpga.dtb} often in the future, you might want to make a
+\texttt{backup/} subdirectory and keep copies of both in there, so you
+always have a set that you know works.
+
+Unmount the boot information partition:
+\begin{minted}{console}
+$ sudo umount mnt/
+\end{minted}
+
+Your boot information partition is now finished.
+
+Please note that cross-compiling a kernel like this works well enough
+to get the board to boot, but ultimately is a little bit broken. Once
+you have the board working at the end of this guide, you will want to
+run through this section again \textit{on the board itself}, to
+generate a truly native kernel build.
+
+\section{Installing Debian}
+
+We will be using the \texttt{qemu-debootstrap} tool to install Debian on to the
+root partition. First, though, we have to mount the root partition
+(\#2):
+\begin{minted}{console}
+$ sudo mount /dev/sdcard2 mnt/
+\end{minted}
+
+We'll be installing Debian Jessie from the official mirror, but other
+mirrors and releases will likely work:
+\begin{minted}{console}
+$ sudo qemu-debootstrap --arch=armhf jessie \
+  mnt/ http://ftp.debian.org/debian/
+\end{minted}
+
+Lastly, we'll install the Debian kernel packages we made earlier. All we
+need right now are the kernel modules and headers, but we copy the
+others into \texttt{/root} in case we need them later.
+
+\begin{minted}{console}
+$ sudo cp *.deb mnt/root/
+$ sudo chroot mnt/ dpkg -i \
+  /root/linux-headers-*.deb
+$ sudo chroot mnt/ dpkg -i \
+  /root/linux-image-*.deb
+\end{minted}
+
+As of now, you have a fully functioning Debian system, but there are a
+handful of niceties to finish up.
+
+\subsection{Setting Up Users}
+
+Running things as \texttt{root} all the time is (generally speaking) a bad
+idea. To create a new user for everyday work:
+\begin{minted}{console}
+$ sudo chroot mnt/ adduser --add_extra_groups \
+  <username>
+\end{minted}
+
+To give this user access to \texttt{sudo} so they can become root:
+\begin{minted}{console}
+$ sudo chroot mnt/ adduser <username> sudo
+\end{minted}
+
+Since we have this user, we'll lock root logins:
+\begin{minted}{console}
+$ sudo chroot mnt/ passwd -l root
+\end{minted}
+
+\subsection{Installing Tools}
+
+There are a couple of Debian packages you would probably like to have:
+\begin{itemize}
+\item \texttt{locales}, mostly to get rid of errors, but also to handle locales
+\item \texttt{ntp}, to set the correct time on boot via the Internet
+\item \texttt{openssh-server}, for remote shell access
+\item \texttt{sudo}, to get root access
+\end{itemize}
+
+To install these:
+\begin{minted}{console}
+$ sudo chroot mnt/ apt-get install locales ntp \
+  openssh-server sudo
+\end{minted}
+
+These commands have started a few services accidentally. You can kill
+them with:
+\begin{minted}{console}
+$ sudo killall mnt/usr/bin/qemu-arm-static
+\end{minted}
+
+By default, the SSH server allows logging in remotely as root. This is a
+pretty bad idea, so edit \texttt{mnt/etc/ssh/sshd\_config} and change the
+following line:
+\begin{minted}{apacheconf}
+PermitRootLogin without-password
+# change to:
+PermitRootLogin no
+\end{minted}
+
+If you care to, you can change the default timezone from UTC to
+something more appropriate:
+\begin{minted}{console}
+$ sudo chroot mnt/ dpkg-reconfigure tzdata
+\end{minted}
+
+Finally, reconfigure locales to use the \texttt{en\_US.UTF-8} locale:
+\begin{minted}{console}
+$ sudo chroot mnt/ dpkg-reconfigure locales
+\end{minted}
+
+\subsection{Setting Up Networking}
+
+To have the ethernet device automatically set itself up with DHCP on
+boot (which is usually what you want), edit the file
+\texttt{mnt/etc/network/interfaces} and add the following lines:
+\begin{minted}{text}
+allow-hotplug eth0
+iface eth0 inet dhcp
+\end{minted}
+
+By default, the new Debian install will have the same hostname as the
+host you built it on. This can be confusing. Edit
+\texttt{mnt/etc/hostname} to change it, then edit
+\texttt{mnt/etc/hosts} to add the new hostname:
+\begin{minted}[breaklines]{text}
+127.0.0.1       localhost <hostname>
+::1             localhost ip6-localhost ip6-loopback <hostname>
+ff02::1         ip6-allnodes
+ff02::2         ip6-allrouters
+\end{minted}
+
+\subsection{Fix APT Sources}
+
+\texttt{debootstrap} installs a very minimal list of sources for APT
+to use. To fix it, open \texttt{mnt/etc/apt/sources.list} and replace
+the whole thing with:
+\begin{minted}[breaklines]{sources.list}
+deb http://ftp.us.debian.org/debian jessie main contrib non-free
+deb-src http://ftp.us.debian.org/debian jessie main contrib non-free
+
+deb http://security.debian.org/ jessie/updates main contrib non-free
+deb-src http://security.debian.org/ jessie/updates main contrib non-free
+
+# jessie-updates, previously known as 'volatile'
+deb http://ftp.us.debian.org/debian jessie-updates main contrib non-free
+deb-src http://ftp.us.debian.org/debian jessie-updates main contrib non-free
+\end{minted}
+
+Make sure these new mirrors work by updating your package list:
+\begin{minted}{console}
+$ sudo chroot mnt/ apt-get update
+\end{minted}
+
+\section{Finishing Up}
+
+Now that everything's in place, we can unmount the root partition:
+\begin{minted}{console}
+$ sudo umount mnt/
+\end{minted}
+
+If you are writing to a disk image over a loopback device, now is the
+time to destroy that, too:
+\begin{minted}{console}
+$ sudo losetup -d /dev/sdcard
+\end{minted}
+
+Your SD card is finished! Go and boot it, and watch over the USB serial
+console. When the time comes, you will be able to log in with username
+and password you set earlier.
+
+If you created the card using an image, now would be an excellent time
+to expand the root partition to cover the rest of the card, and resize
+the root filesystem.
+
+\end{document}
