@@ -106,8 +106,15 @@ listed under ``\textit{Ports (COM \& LPT)}'' as ``\textit{USB Serial
 Now, launch PuTTY, and in the configuration window that pops up click
 the ``\textit{Serial}'' radio button, then type in your port name
 (like \texttt{COM4}) into the ``\textit{Serial line}'' field. Then,
-type \num{115200} into the ``\textit{Speed}'' field. Finally, click
-the ``\textit{Open}'' button.
+type \num{115200} into the ``\textit{Speed}'' field. It should look
+someting like \Cref{fig:putty}. Finally, click the ``\textit{Open}''
+button.
+
+\begin{figure}
+  \includegraphics[width=6cm]{figures/putty.png}
+  \caption{Example configuration for PuTTY to talk to the serial console.}
+  \label{fig:putty}
+\end{figure}
 
 You should see a blank screen, but that will shortly fill with text
 once we turn the SoCKit on.

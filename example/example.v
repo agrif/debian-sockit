@@ -2,7 +2,8 @@ module example(input OSC_50_B3B,
 
                output [3:0] LED,
                
-               // using the HPS requires a *lot* of memory signals to be connected...
+               // using the HPS requires a *lot* of memory signals to
+               // be connected...
                output [14:0] DDR3_A,
                output [2:0]  DDR3_BA,
                output        DDR3_CK_p,
@@ -28,8 +29,8 @@ module example(input OSC_50_B3B,
    wire [31:0] sampler;
    // data is played out to here each clock cycle
    wire [31:0] player;
-   // the widths of both of these, and other settings, can be configured in Qsys
-   // by editing hps_system.qsys and regenerating
+   // the widths of both of these, and other settings, can be
+   // configured in Qsys by editing hps_system.qsys and regenerating
 
    // when the sampler turns on, this goes high
    wire sampler_active;
@@ -39,7 +40,8 @@ module example(input OSC_50_B3B,
    // we'll connect the sampler input to the player output, as a demo
    assign sampler = player;
 
-   // declare our hps instance (defined in hps_system.qsys, needs to be generated...)
+   // declare our hps instance (defined in hps_system.qsys, needs to
+   // be generated...)
    hps_system hps(.clk_clk(clk),
                   .reset_reset_n(1),
 
@@ -47,14 +49,16 @@ module example(input OSC_50_B3B,
                   .sample_export(sampler),
                   
                   // data is played out here on each clock cycle
-                  .sample_export(player),
+                  .play_export(player),
 
-                  // connect the active outputs / active low reset outputs
+                  // connect the active outputs / active low reset
+                  // outputs
                   .sample_reset_reset_n(sampler_active),
                   .play_reset_reset_n(player_active),
 
                   // manually connect sampler_active to player_enable
-                  // this will force player on as soon as sampler turns on!
+                  // this will force player on as soon as sampler
+                  // turns on!
                   .play_enable_export(sampler_active),
 
                   // all of the memory connections (there are a lot)

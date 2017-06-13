@@ -1,2 +1,7 @@
-/guide.*
+/*.aux
+/*.log
+/*.out
+/*.pdf
+/*.bib
+/_minted-*
 /extras/u-boot.scr

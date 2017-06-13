@@ -23,6 +23,12 @@
 /example.pin
 /example.done
 /example.qws
+/example.rbf
+/example.sld
 /example_assignment_defaults.qdf
 /hps_system
+/hps_isw_handoff
+/hps_sdram_p0_all_pins.txt
+/hps_sdram_p0_summary.csv
+/c5_pin_model_dump.txt
 *.sopcinfo
