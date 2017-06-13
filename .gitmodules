@@ -1,0 +1,3 @@
+[submodule "example/ip/sampler-player"]
+	path = example/ip/sampler-player
+	url = https://github.com/agrif/sampler-player.git

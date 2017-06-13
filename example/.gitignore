@@ -1,0 +1,28 @@
+# these might cause you problems...
+*.html
+
+# quartus database
+/db/
+/incremental_db/
+
+# temporary files
+*~
+
+# reports, suppressed messages, and summaries
+*.rpt
+*.smsg
+*.summary
+*.cmp
+.qsys_edit/
+
+# built stuff
+/example.jdi
+/example.sof
+/example_time_limited.sof
+/example.pof
+/example.pin
+/example.done
+/example.qws
+/example_assignment_defaults.qdf
+/hps_system
+*.sopcinfo

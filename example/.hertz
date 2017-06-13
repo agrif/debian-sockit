@@ -1,0 +1,16 @@
+# -*- mode: yaml -*-
+
+program:
+  defaults: --cable=USB-Blaster --mode=JTAG
+
+qsys:
+  defaults: --language=verilog
+
+nios2:
+  defaults: --bsp=hal
+
+build:
+  commands:
+    - hz map
+    - hz fit
+    - hz asm
