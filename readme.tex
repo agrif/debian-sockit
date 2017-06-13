@@ -240,4 +240,88 @@ Now Linux is using your entire SD card. You can verify this by running:
 \begin{minted}{console}
   $ df -h /
 \end{minted}
+
+\section{Building the Example}
+
+Alongside this guide is a file named \texttt{example.zip}, which
+contains an example Quartus project for use with the SoCKit
+board. Please download this, extract it, and open \texttt{example.qpf}
+in Quartus.
+
+This project contains two custom IP cores, the \fnurl{Sampler and
+  Player}{https://github.com/agrif/sampler-player/}, which can be used
+by the hard processor (in Linux) to sample time series data on the
+FPGA, as well as play back data from Linux back to the FPGA. In this
+example they have been connected to each other in a loopback
+configuration, for testing. Finally, there is a binary counter that
+displays on the LEDs on the front of the board.
+
+Feel free to take a moment to read \texttt{example.v} and to look at
+the connections made in \texttt{hps\_system.qsys} inside the Qsys
+editor.
+
+To build the project, open \texttt{hps\_system.qsys} inside the Qsys
+editor, then regenerate the system by going to the
+``\textit{Generate}'' menu, then clicking ``\textit{Generate
+  HDL..}''. The default generation settings are fine, so just click
+the ``\textit{Generate}'' button. This generates the Verilog code for
+the Sampler and Player modules, as well as the interconnect to the
+hard processor running Linux.
+
+Once Qsys has finished, return to Quartus to compile by going to the
+``\textit{Processing}'' menu, then clicking ``\textit{Start
+  Compilation}''.
+
+Once Quartus has finished, it is possible to program the SoCKit board
+using the USB-Blaster II port and USB cable, similar to other
+boards. However, we will instead use the SD card and hard processor to
+program the FPGA at boot time. To do this, we need to create an RBF
+file by opening menu ``\textit{File}'' and clicking ``\textit{Convert
+  Programming Files...}''. Select ``\textit{Raw Binary File (.rbf)}''
+as the output programming file type, set \texttt{socfpga.rbf} as the
+file name, and under ``\textit{Input files to convert}'' add the
+\texttt{example.sof} file that Quartus just finished compiling (see
+\Cref{fig:rbf}). Finally, press the ``\textit{Generate}'' button.
+
+\begin{figure}
+  \includegraphics[width=8cm]{figures/rbf.png}
+  \caption{Example settings for the Quartus programming file conversion window.}
+  \label{fig:rbf}
+\end{figure}
+
+This file will program the FPGA, but now we need to provide Linux with
+information about what sort of hardware the FPGA will provide. To do
+this we will use the \texttt{dtbgen.py} script provided in the
+example.
+
+Remove the SD card from the SoCKit board, and put it back in your
+computer. Copy the \texttt{backup/socfpga.dtb} file off the SD card
+somewhere handy. This file is an unmodified description of the
+hardware on the board, that we will now modify to include the new
+hardware provided by the FPGA. This \texttt{backup/} directory is
+provided so that unmodified versions of these files are always
+available.
+
+Open up a terminal window, and navigate to the example project. There,
+we will use \fnurl{Python 3}{https://www.python.org/} to run
+\texttt{dtbgen.py}:
+\begin{minted}{console}
+  $ python3 dtbgen.py path/to/backup/socfpga.dtb \
+    hps_system.sopcinfo -t dtb -o socfpga.dtb
+\end{minted}
+
+This will use information in \texttt{hps\_system.sopcinfo} (generated
+by Qsys) to modify the backup \texttt{socfpga.dtb} to create a new,
+modified \texttt{socfpga.dtb}.
+
+Armed with both these files, now copy \texttt{socfpga.rbf} and
+\texttt{socfpga.dtb} to the SD card, and remove it and re-insert it
+into the SoCKit board. Turn the board off then on again.
+
+After a short pause, the board should load the RBF file, and you
+should see the LEDs on the front of the board start to blink, counting
+up in binary. If you see that, it worked!
+
+\section{Using the Sampler and Player}
+
 \end{document}
