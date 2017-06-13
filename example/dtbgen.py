@@ -5,7 +5,7 @@ import collections
 import re
 import sys
 from xml.etree import ElementTree as ET
-from pyfdt import pyfdt
+import pyfdt
 
 STRICT_PARSING = True
 
