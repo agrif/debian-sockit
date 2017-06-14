@@ -1,4 +1,4 @@
-SOURCES=readme.tex sdcard.tex
+SOURCES=sockit-guide.tex appendix-sdcard.tex
 
 LATEX=xelatex -shell-escape
 
