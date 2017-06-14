@@ -327,4 +327,67 @@ up in binary. If you see that, it worked!
 
 \section{Using the Sampler and Player}
 
+The SD card image we used comes loaded with a Linux kernel driver for
+the Sampler and Player modules, as well as a Python module to
+interface with them. We can test that out now. On the board's console,
+launch Python:
+\begin{minted}{console}
+  $ python
+  Python 2.7.9 (...)
+  ...
+  >>>
+\end{minted}
+
+To speak to the hardware now on the FPGA, we will use \texttt{numpy}
+for dealing with data and a custom module \texttt{osuqlsp} for talking
+to the Linux driver.
+\begin{minted}{pycon}
+  >>> import numpy, osuqlsp
+\end{minted}
+
+We will create a new \texttt{SPPair} object, which represents a
+Sampler and Player linked together and running at the same time.
+\begin{minted}{pycon}
+  >>> sp = osuqlsp.SPPair('/dev/sampler0',
+  ...       '/dev/player0')
+\end{minted}
+
+We can use this to play out data through the Player, while at the same
+time reading in data through the Sampler. First, though, we need some
+data. This hardware has been configured to deal with \num{1024}
+discrete time steps, using \num{32} bits at each step. So we'll create
+a \texttt{numpy} array of that size, full of zeros, and then set the
+second bit on the $t = 1$ step to be \num{1}:
+\begin{minted}{pycon}
+  >>> data = numpy.zeros((1024, 32))
+  >>> data[1, 2] = 1
+  >>> data
+\end{minted}
+You should see Python print out a summary of our data.
+
+Now, we can run it out through the Player, and see what results are
+recorded on the Sampler:
+\begin{minted}{pycon}
+  >>> result = sp.run(data)
+  >>> result
+\end{minted}
+
+You should see exactly the same data that was played in, delayed by
+one time step. In this design, the Player is wired to turn on when the
+Sampler does, but as this can only occur on a clock edge, in practice
+the Player turns on one clock cycle after the Sampler, which leads to
+this 1-cycle delay.
+
+Data stored in \texttt{data[t, n]} will appear, one clock cycle
+\texttt{t} at a time, inside the wire \texttt{player[n]} in the
+Verilog design. And in the recorded data, \texttt{result[t, n]} will
+be the value recorded on the wire \texttt{sampler[n]} on clock cycle
+\texttt{t}. Since we have assigned \texttt{sampler} to equal
+\texttt{player}, the data input to \texttt{sp.run} should match the
+data output (except for the one cycle delay mentioned above).
+
+A full tutorial on using Python is outside the scope of this guide,
+but hopefully this will help you get started feeding data in to the
+FPGA and reading data out.
+
 \end{document}
