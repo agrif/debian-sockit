@@ -75,6 +75,7 @@ The SoCKit has \num{3} USB ports:
 \item an HPS-USB port,
 \item a UART to USB port.
 \end{itemize}
+They are labeled on the board.
 
 Connect one end of the supplied USB cable to the UART to USB port, and
 the other end to your computer. We will use this cable to view the
@@ -140,8 +141,8 @@ your serial console name. To connect to it, we can use \fnurl{GNU
 (Use your own console name instead of \texttt{/dev/ttyUSB0}.)
 
 You should see a blank screen, but that will shortly fill with text
-once we turn the SoCKit on. To exit the serial console, hit
-\keys{\ctrl + A} then \keys{K}, followed by \keys{Y} to confirm.
+once we turn the SoCKit on. When you wish to exit the serial console,
+hit \keys{\ctrl + A} then \keys{K}, followed by \keys{Y} to confirm.
 
 \section{Booting Linux}
 
@@ -186,6 +187,8 @@ username ``\textit{sockit}'' on the command line with:
 \begin{minted}{console}
   $ ssh sockit@<put ip address here>
 \end{minted}
+
+Once connected, you can close the session by running \texttt{exit}.
 
 Using SSH instead of the serial console is entirely up to you, but you
 may find it convenient. In particular, you can use it to transfer
