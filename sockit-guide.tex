@@ -392,4 +392,79 @@ FPGA and reading data out.
 
 You can press \keys{\ctrl + D} at the Python prompt to exit Python.
 
+\section{Small Comforts}
+
+This concludes the main part of the guide. However, there are some
+small things you can do to make working on Linux on the board a little
+bit more comfortable.
+
+\subsection{Updating and Installing Software}
+
+Debian comes with a built-in mechanism to update itself. To do so, you
+can run:
+\begin{minted}{console}
+  $ sudo apt-get update
+  $ sudo apt-get upgrade
+\end{minted}
+
+This will also pull in any fixes or updates to the Sampler/Player
+software I may have released since the SD card image was made.
+
+Debian also provides a ton of software pre-built for ARM chips like
+the one on the SoCKit board. For example, to install \texttt{scipy}, a
+scientific library for Python:
+\begin{minted}{console}
+  $ sudo apt-get install python-scipy
+\end{minted}
+
+\subsection{Creating a New User}
+
+Your muscle memory might thank you for creating a new username and
+password that is more familiar:
+\begin{minted}{console}
+  $ sudo adduser --add_extra_groups \
+    --ingroup sudo <username>
+  $ logout
+\end{minted}
+
+You can then log-in as the new user, and if you choose, delete the old
+default user:
+\begin{minted}{console}
+  $ sudo deluser --remove-home sockit
+\end{minted}
+
+\subsection{Timezones and Locales}
+
+The SD card is configured to use a UTC timezone, and generic United
+States English locale. If you would prefer something different, run
+one of:
+\begin{minted}{console}
+  $ sudo dpkg-reconfigure tzdata
+  $ sudo dpkg-reconfigure locales
+\end{minted}
+
+\subsection{Setting a Hostname}
+
+If you are working on a shared network, or using many SoCKit boards,
+you might want to name them individually with something more unique
+than \texttt{sockit}. You can use \texttt{nano}, a console-based
+editor, to edit some files.
+
+Movement is possible with the arrow keys. To write the changes and exit, press \keys{\ctrl + X} then \keys{Y}, then \keys{\enterwin} to confirm.
+
+Edit \texttt{/etc/hostname} to replace \texttt{sockit} with your desired name:
+\begin{minted}{console}
+  $ sudo nano /etc/hostname
+\end{minted}
+
+Now, edit \texttt{/etc/hosts} and do the same
+\begin{minted}{console}
+  $ sudo nano /etc/hosts
+\end{minted}
+
+Finally, reboot to have the changes take effect:
+\begin{minted}{console}
+  $ sudo reboot
+\end{minted}
+
 \end{document}
