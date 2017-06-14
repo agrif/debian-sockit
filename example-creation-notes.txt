@@ -1,0 +1,11 @@
+Qsys HPS module was set up as in:
+
+  https://zhehaomao.com/blog/fpga/2013/12/27/sockit-3.html
+
+Pin assignments are as in the Terasic System Builder, except I removed
+all SDRAM pin assignments after setting up the connections to them in
+the main Verilog module, then ran:
+
+  hps_system/synthesis/submodules/hps_sdram_p0_pin_assignments.tcl
+
+This added a lot of wire settings to the QSF file, and seemed to work.
