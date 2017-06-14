@@ -10,10 +10,15 @@
 \RequirePackage[nameinlink]{cleveref}
 \RequirePackage{minted}
 \RequirePackage{graphicx}
-\RequirePackage{menukeys}
+\RequirePackage[definemenumacros=false]{menukeys}
 
 \usemintedstyle{bw}
 \setminted{autogobble,breakindent=2em,breaksymbolleft={}}
+
+\newmenumacro{\menu}[>]{angularmenus}
+\changemenuelement{paths}{sep}{/}
+\newmenumacro{\directory}[/]{paths}
+\newmenumacro{\keys}[+]{shadowedroundedkeys}
 
 \newcommand\fnurl[2]{%
   \href{#2}{#1}\footnote{\url{#2}}%

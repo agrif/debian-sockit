@@ -40,20 +40,20 @@ the board labeled \texttt{MSEL}, and move the switches into place as indicated i
 \end{figure}
 
 Alongside this guide, there should be a large file named
-\texttt{debian.img.bz2}. Please download this file now. We are going
-to write this file to the MicroSD card using a program named
+\directory{debian.img.bz2}. Please download this file now. We are
+going to write this file to the MicroSD card using a program named
 \fnurl{Etcher}{https://etcher.io/}, which simplifies the process. If
 you already know how to write SD card images and would rather do it
 differently, feel free.
 
 Launch Etcher, and as the first step, select the
-\texttt{debian.img.bz2} file you downloaded earlier. Then, select the
+\directory{debian.img.bz2} file you downloaded earlier. Then, select the
 SD card reader you are using as the destination drive. \textit{Be
   careful to choose correctly!} Writing to the wrong drive will
 destroy any data already on that drive.
 
 Once you have set the image file and destination drive (see
-\Cref{fig:etcher}), click the ``\textit{Flash!}'' button to begin writing
+\Cref{fig:etcher}), click the \menu{Flash!} button to begin writing
 to the SD card. This can take some time.
 
 \begin{figure}
@@ -105,10 +105,10 @@ listed under ``\textit{Ports (COM \& LPT)}'' as ``\textit{USB Serial
 \end{figure}
 
 Now, launch PuTTY, and in the configuration window that pops up click
-the ``\textit{Serial}'' radio button, then type in your port name
-(like \texttt{COM4}) into the ``\textit{Serial line}'' field. Then,
-type \num{115200} into the ``\textit{Speed}'' field. It should look
-someting like \Cref{fig:putty}. Finally, click the ``\textit{Open}''
+the \menu{Serial} radio button, then type in your port name
+(like \texttt{COM4}) into the \menu{Serial line} field. Then,
+type \num{115200} into the \menu{Speed} field. It should look
+something like \Cref{fig:putty}. Finally, click the \menu{Open}
 button.
 
 \begin{figure}
@@ -160,7 +160,7 @@ not, go back and see if you missed something, or contact me.
 \end{figure}
 
 Now that you have a login prompt, you can log in with the username
-``\textit{sockit}'' and password ``\textit{arrow}''.
+\texttt{sockit} and password \texttt{arrow}.
 
 \section{Connecting over SSH}
 
@@ -179,11 +179,11 @@ it over the serial console:
 \end{minted}
 
 In Windows, you can paste this address in to the PuTTY field for
-``Host Name'', and PuTTY will directly connect to your board over the
+\menu{Host Name}, and PuTTY will directly connect to your board over the
 network, without using USB.
 
 On Linux or MacOS, you can log in to your board over SSH with the
-username ``\textit{sockit}'' on the command line with:
+username \texttt{sockit} on the command line with:
 \begin{minted}{console}
   $ ssh sockit@<put ip address here>
 \end{minted}
@@ -246,10 +246,10 @@ Now Linux is using your entire SD card. You can verify this by running:
 
 \section{Building the Example}
 
-Alongside this guide is a file named \texttt{example.zip}, which
+Alongside this guide is a file named \directory{example.zip}, which
 contains an example Quartus project for use with the SoCKit
-board. Please download this, extract it, and open \texttt{example.qpf}
-in Quartus.
+board. Please download this, extract it, and open
+\directory{example.qpf} in Quartus.
 
 This project contains two custom IP cores, the \fnurl{Sampler and
   Player}{https://github.com/agrif/sampler-player/}, which can be used
@@ -259,32 +259,30 @@ example they have been connected to each other in a loopback
 configuration, for testing. Finally, there is a binary counter that
 displays on the LEDs on the front of the board.
 
-Feel free to take a moment to read \texttt{example.v} and to look at
-the connections made in \texttt{hps\_system.qsys} inside the Qsys
-editor.
+Feel free to take a moment to read \directory{example.v} and to look
+at the connections made in \directory{hps\_system.qsys} inside the
+Qsys editor.
 
-To build the project, open \texttt{hps\_system.qsys} inside the Qsys
-editor, then regenerate the system by going to the
-``\textit{Generate}'' menu, then clicking ``\textit{Generate
-  HDL..}''. The default generation settings are fine, so just click
-the ``\textit{Generate}'' button. This generates the Verilog code for
-the Sampler and Player modules, as well as the interconnect to the
-hard processor running Linux.
+To build the project, open \directory{hps\_system.qsys} inside the Qsys
+editor, then regenerate the system by going to \menu{Generate >
+  Generate HDL..} in the top menu. The default generation settings are
+fine, so just click the \menu{Generate} button. This generates the
+Verilog code for the Sampler and Player modules, as well as the
+interconnect to the hard processor running Linux.
 
-Once Qsys has finished, return to Quartus to compile by going to the
-``\textit{Processing}'' menu, then clicking ``\textit{Start
-  Compilation}''.
+Once Qsys has finished, return to Quartus to compile by going up to
+the menu and clicking \menu{Processing > Start Compilation}.
 
 Once Quartus has finished, it is possible to program the SoCKit board
 using the USB-Blaster II port and USB cable, similar to other
 boards. However, we will instead use the SD card and hard processor to
 program the FPGA at boot time. To do this, we need to create an RBF
-file by opening menu ``\textit{File}'' and clicking ``\textit{Convert
-  Programming Files...}''. Select ``\textit{Raw Binary File (.rbf)}''
-as the output programming file type, set \texttt{socfpga.rbf} as the
-file name, and under ``\textit{Input files to convert}'' add the
-\texttt{example.sof} file that Quartus just finished compiling (see
-\Cref{fig:rbf}). Finally, press the ``\textit{Generate}'' button.
+file by opening menu \menu{File > Convert Programming
+  Files...}. Select \menu{Raw Binary File (.rbf)} as the output
+programming file type, set \directory{socfpga.rbf} as the file name,
+and under \menu{Input files to convert} add the
+\directory{example.sof} file that Quartus just finished compiling (see
+\Cref{fig:rbf}). Finally, press the \menu{Generate} button.
 
 \begin{figure}
   \includegraphics[width=8cm]{figures/rbf.png}
@@ -298,10 +296,10 @@ this we will use the \texttt{dtbgen.py} script provided in the
 example.
 
 Remove the SD card from the SoCKit board, and put it back in your
-computer. Copy the \texttt{backup/socfpga.dtb} file off the SD card
+computer. Copy the \directory{backup/socfpga.dtb} file off the SD card
 somewhere handy. This file is an unmodified description of the
 hardware on the board, that we will now modify to include the new
-hardware provided by the FPGA. This \texttt{backup/} directory is
+hardware provided by the FPGA. This \directory{backup} directory is
 provided so that unmodified versions of these files are always
 available.
 
@@ -313,12 +311,12 @@ we will use \fnurl{Python 3}{https://www.python.org/} to run
     hps_system.sopcinfo -t dtb -o socfpga.dtb
 \end{minted}
 
-This will use information in \texttt{hps\_system.sopcinfo} (generated
-by Qsys) to modify the backup \texttt{socfpga.dtb} to create a new,
-modified \texttt{socfpga.dtb}.
+This will use information in \directory{hps\_system.sopcinfo}
+(generated by Qsys) to modify the backup \directory{socfpga.dtb} to
+create a new, modified \directory{socfpga.dtb}.
 
-Armed with both these files, now copy \texttt{socfpga.rbf} and
-\texttt{socfpga.dtb} to the SD card, and remove it and re-insert it
+Armed with both these files, now copy \directory{socfpga.rbf} and
+\directory{socfpga.dtb} to the SD card, and remove it and re-insert it
 into the SoCKit board. Turn the board off then on again.
 
 After a short pause, the board should load the RBF file, and you
