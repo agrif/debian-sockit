@@ -1,0 +1,35 @@
+The official distribution includes:
+ * debian.img.bz2
+ * readme.pdf
+ * sdcard.pdf
+ * example.zip
+ * extras.zip
+
+The official SD card image is created by essentially following the guide,
+except:
+
+ * the u-boot.txt file is used (compiled) as u-boot.scr
+ * the boot backup directory
+ * there is a README.txt in the boot partition, describing it:
+   * what version of debian
+   * what board
+   * date it was created
+   * my name and email
+   * default username and password
+   * uart baud rate
+   * using socfpga.rbf
+ * the timezone is UDT,
+ * the username is 'arrow' and the password is 'sockit'
+
+Then, on an actual board... (so that dkms doesn't explode)
+ * instead of installing debs manually, they are installed from
+     deb https://s3.us-east-2.amazonaws.com/debian-sockit/repo ./
+   inside /etc/apt/sources.list.d/debian-sockit.list
+ * install apt-transport-https and then `apt-get update`
+ * installed: kernel and sampler-player modules, see below
+
+The repository is filled with:
+ * sampler-player: built with `dpkg-buildpackage -us -uc -b`
+ * linux kernel, built as in sd card guide
+
+The repo itself is rebuilt with a Makefile, contained here in `repo/`.

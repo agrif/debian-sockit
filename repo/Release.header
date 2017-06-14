@@ -1,0 +1,8 @@
+Origin: SoCKit Debian Repository (rakeri.net)
+Label: SoCKit Debian Repository
+Suite: stable
+Version: 1.0
+Codename: rakeri.net
+Architectures: armhf
+Components: main
+Description: a repository for debian SoCKit packages
